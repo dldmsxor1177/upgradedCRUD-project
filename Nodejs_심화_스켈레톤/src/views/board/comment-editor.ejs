@@ -1,0 +1,38 @@
+<form>
+    <input id="comment-editor" value="" type="text" onfocus="checkAuth()" />
+    <button onclick="submitComment()" type="button">제출</button>
+</form>
+
+<script>
+    function submitComment() {
+        const commmentEditorInput = document.querySelector('#comment-editor');
+        const data = {
+            content: commmentEditorInput.value,
+        };
+        if (!data.content) {
+            alert('댓글 내용을 입력해주세요');
+        }
+        const client = new XMLHttpRequest()
+        client.onload = function () {
+            if (client.status === 200) {
+                // 200: 성공한 요청
+                alert('가입을 추가합니다. 로그인 후 이용해주세요.');
+                // location.reload();
+            } else if (client.status === 400) {
+                // 400: 실패한 요청
+                alert(client.responseText);
+            }
+        }
+        client.open('POST', '/api/boards/<%= boardId %>/comments');
+        client.setRequestHeader('Content-Type', 'application/json');
+        client.send(JSON.stringify(data));
+    }
+
+    function checkAuth() {
+        const auth = '<%= locals.user %>';
+        if (!auth) {
+            alert('로그인이 필요한 기능입니다.');
+            location = '/sign-in';
+        }
+    }
+</script>

@@ -1,0 +1,36 @@
+<form>
+    <div>
+        <input id="username" name="username" value="" placeholder="닉네임을 입력해주세요" type="text" />
+    </div>
+    <div>
+        <input id="password" name="password" value="" placeholder="패스워드를 입력해주세요" type="password" />
+    </div>
+    <div>
+        <input id="passwordConfirmation" name="passwordConfirmation" value="" placeholder="패스워드를 입력해주세요" type="password" />
+    </div>
+    <button onclick="register()" type="button">가입하기</button>
+</form>
+
+<script>
+    function register() {
+        const usernameInput = document.querySelector('#username');
+        const passwordInput = document.querySelector('#password');
+        const passwordConfirmationInput = document.querySelector('#passwordConfirmation');
+        const data = {
+            username: usernameInput.value,
+            password: passwordInput.value,
+            passwordConfirmation: passwordConfirmationInput.value,
+        }
+        const client = new XMLHttpRequest()
+        client.onload = function () {
+            if (client.status === 200) {
+                location = '/sign-in'
+            } else if (client.status === 400) {
+                alert(client.responseText);
+            }
+        }
+        client.open('POST', '/api/auth/sign-up');
+        client.setRequestHeader('Content-Type', 'application/json');
+        client.send(JSON.stringify(data));
+    }
+</script>

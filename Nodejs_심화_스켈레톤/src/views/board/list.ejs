@@ -1,0 +1,49 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Title</th>
+            <th scope="col">Writer</th>
+            <th scope="col">created date</th>
+        </tr>
+    </thead>
+    <tbody id="board-table-body">
+    </tbody>
+</table>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        fetchBoards();
+    })
+
+    function createRow(board) {
+        return `
+            <tr>
+                <td><a href="/boards/${board._id}">${board.title}</a></td>
+                <td>${board.writer.username}</td>
+                <td>${board.createdAt}</td>
+            </tr>
+        `
+    }
+
+    function fetchBoards() {
+        var client = new XMLHttpRequest();
+        client.onload = function () {
+            // 200: 성공한 경우
+            if (client.status == 200) {                    
+                const boards = JSON.parse(client.responseText);
+                let innerHTML = '';
+                for (const board of boards) {
+                    innerHTML += createRow(board);
+                }
+                const body = document.querySelector('#board-table-body')
+                body.innerHTML = innerHTML;
+            }
+        }
+        client.onerror = function () {
+            console.error(client.responseText);
+        }
+        client.open('GET', '/api/boards');
+        client.send();
+    }
+
+</script>

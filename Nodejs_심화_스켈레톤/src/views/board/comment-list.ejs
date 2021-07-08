@@ -1,0 +1,96 @@
+<%- include('./comment-editor') -%>
+
+<ul id="comment-container">
+
+</ul>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        fetchComments();
+    });
+
+    let userId = '<%= (locals.user || {})._id %>';
+
+    function createRow(comment) {
+        return `
+            <li id="comment-${comment._id}" data-id="${comment._id}">
+                <div>
+                    <span>${comment.writer.username}</span>
+                </div>
+                <div>
+                    <span>${comment.content}</span>
+                </div>
+                <div>
+                    <span>${new Date(comment.createdAt).toLocaleString()}</span>
+                </div>
+                ${
+                    comment.writer._id === userId ? `
+                        <div>
+                            <button type="button" onclick="modifyComment('${comment._id}', '${comment.content}')">수정하기</button>
+                            <button type="button" onclick="deleteComment('${comment._id}')">삭제하기</button>
+                        </div>
+                    ` : ''
+                }
+            </li>
+        `
+    }
+
+    function fetchComments() {
+        const client = new XMLHttpRequest();
+        client.onload = function () {
+            // 200: 성공한 경우
+            if (client.status == 200) {                    
+                const comments = JSON.parse(client.responseText);
+                let innerHTML = '';
+                for (const comment of comments) {
+                    innerHTML += createRow(comment);
+                }
+                const body = document.querySelector('#comment-container')
+                body.innerHTML = innerHTML;
+            }
+        }
+        client.onerror = function () {
+            console.error(client.responseText);
+        }
+        client.open('GET', '/api/boards/<%= boardId %>/comments');
+        client.send();
+    }
+
+    function modifyComment(commentId, currentString) {
+        const content = prompt('수정할 댓글을 입력해주세요', currentString);
+        if (currentString !== content) {
+            const client = new XMLHttpRequest();
+            client.onload = function () {
+                // 200: 성공한 경우
+                if (client.status == 200) {
+                    location.reload();
+                }
+            }
+            client.onerror = function () {
+                console.error(client.responseText);
+            }
+            client.open('PATCH', `/api/boards/<%= boardId %>/comments/${commentId}`);
+            client.setRequestHeader('Content-Type', 'application/json');
+            client.send(JSON.stringify({ content }));
+        }
+    }
+
+    function deleteComment(commentId) {
+        if (confirm('정말로 삭제하시겠습니까?')) {
+            const client = new XMLHttpRequest();
+            client.onload = function () {
+                // 200: 성공한 경우
+                if (client.status == 200) {   
+                    alert('삭제되었습니다.');
+                    location.reload();
+                }
+            }
+            client.onerror = function () {
+                console.error(client.responseText);
+            }
+            client.open('DELETE', `/api/boards/<%= boardId %>/comments/${commentId}`);
+            client.send();
+        }
+    }
+
+</script>

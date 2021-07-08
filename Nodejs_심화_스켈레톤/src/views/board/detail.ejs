@@ -1,0 +1,74 @@
+<div><a href="/">목록으로</a></div>
+<div class="input-group mb-3">
+<span class="input-group-text" id="basic-addon1">제목</span>
+<input type="text" id='title' class="form-control" aria-label="Username" aria-describedby="basic-addon1"
+    readonly>
+</div>
+<div class="input-group mb-3">
+<span class="input-group-text" id="basic-addon1">작성자명</span>
+<input type="text" id='name' class="form-control" aria-label="Username" aria-describedby="basic-addon1"
+    readonly>
+</div>
+<div class="input-group mb-3">
+<span class="input-group-text" id="basic-addon1">작성날짜</span>
+<input type="text" id='createdAt' class="form-control" aria-label="Username" aria-describedby="basic-addon1" readonly>
+</div>
+<div class="input-group mb-3">
+<span class="input-group-text" id="basic-addon1">내용</span>
+<input type="text" id='content' class="form-control" aria-label="Username" aria-describedby="basic-addon1"
+    readonly>
+</div>
+
+<% if (String((locals.user || {})._id) === String(locals.board.writer._id)) { %>
+<button type="button" id="updateButton" onclick="updateBoard()" class="btn btn-primary">수정하기</button>
+<button type="button" id="deleteButton" onclick="deleteBoard()" class="btn btn-danger">삭제하기</button>
+<% } %>
+
+<%- include('./comment-list') -%>
+
+<script>
+    function deleteBoard() {
+        var client = new XMLHttpRequest();
+        client.onload = function () {
+            if (client.status == 200 || client.status == 201) {
+                alert('삭제되었습니다.');
+                location = '/';
+            }
+        }
+        client.onerror = function () {
+            console.error(client.responseText);
+        }
+
+        client.open('DELETE', `/api/boards/<%= boardId %>`);
+        client.send();
+    }
+
+    function updateBoard() {
+        location = `/boards/<%= boardId %>/edit`;
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        fetchBoard();
+    })
+
+    // 읽어야할 게시글의 정보를 가져옴
+    function fetchBoard() {
+        var client = new XMLHttpRequest();
+        client.onload = function () {
+            if (client.status == 200 || client.status == 201) {
+                const data = JSON.parse(client.responseText);
+                document.querySelector('#title').value = data.title;
+                document.querySelector('#content').value = data.content;
+                document.querySelector('#name').value = data.writer.username;
+                document.querySelector('#createdAt').value = new Date(data.createdAt).toLocaleString();
+            }
+        }
+
+        client.onerror = function () {
+            console.error(client.responseText);
+        }
+
+        client.open('GET', `/api/boards/<%= boardId %>`);
+        client.send();
+    }
+</script>

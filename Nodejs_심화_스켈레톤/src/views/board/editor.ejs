@@ -1,0 +1,85 @@
+<div class="input-group mb-3">
+    <span class="input-group-text" id="basic-addon1">제목</span>
+    <input type="text" id='title' class="form-control" placeholder="제목을 입력해주세요." aria-label="Username"
+        aria-describedby="basic-addon1">
+</div>
+<div class="input-group mb-3">
+    <span class="input-group-text" id="basic-addon1">내용</span>
+    <input type="text" id='content' class="form-control" placeholder="내용을 입력해주세요." aria-label="Content"
+        aria-describedby="basic-addon1">
+</div>
+
+<% if (locals.board) { %>
+    <button type="button" class="btn btn-info" onclick="update()">
+        수정하기
+    </button>
+<% } else { %>
+    <button type="button" class="btn btn-info" onclick="submit()">
+        글쓰기
+    </button>
+<% } %>
+
+<script>
+    document.getElementById('title').value = `<%= (locals.board || {}).title || '' %>`;
+    document.getElementById('content').value = `<%= (locals.board || {}).content || '' %>`;
+
+    // 글쓰기 저장하기
+    function submit() {
+        const client = new XMLHttpRequest();
+
+        const data = {
+            title: document.getElementById('title').value,
+            content: document.getElementById('content').value,
+        };
+
+        if (!data.title || !data.content) {
+            alert('공백이 있습니다.');
+            return;
+        }
+
+        client.onload = function () {
+            if (client.status == 200 || client.status == 201) {
+                alert('글이 등록되었습니다.');
+                location = `/boards/${client.responseText.slice(1, -1)}`;
+            }
+        }
+
+        client.onerror = function () {
+            console.error(client.responseText);
+        }
+
+        client.open('POST', '/api/boards');
+        client.setRequestHeader('Content-Type', 'application/json');
+        client.send(JSON.stringify(data));
+    }
+
+    function update() {
+        const client = new XMLHttpRequest();
+
+        const data = {
+            title: document.getElementById('title').value,
+            content: document.getElementById('content').value,
+        };
+
+        if (!data.title || !data.content) {
+            alert('공백이 있습니다.');
+            return;
+        }
+
+        client.onload = function () {
+            if (client.status == 200 || client.status == 201) {
+                alert('글이 수정되었습니다.');
+                location = `/boards/${client.responseText.slice(1, -1)}`;
+            }
+        }
+
+        client.onerror = function () {
+            console.error(client.responseText);
+        }
+
+        client.open('PATCH', '/api/boards/<%= locals.boardId %>');
+        client.setRequestHeader('Content-Type', 'application/json');
+        client.send(JSON.stringify(data));
+    }
+
+</script>

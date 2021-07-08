@@ -1,0 +1,30 @@
+<% if (!locals.isAuthPath) { %>
+    <nav>
+        <% if (!locals.user) { %>
+            <a href="/sign-up">회원가입</a>
+            <a href="/sign-in">로그인</a>
+        <% }  else { %>
+            <button onclick="logout()">로그아웃</button>
+        <% } %>
+        
+        <% if (!locals.editor) { %>
+            <a href="/boards/new">글쓰러 가기</a>
+        <% } %>
+    </nav>
+<% } %>
+<script>
+    function logout() {
+        var client = new XMLHttpRequest();
+        client.onload = function () {
+            // 200: 성공한 경우
+            if (client.status == 200) {                    
+                location = '/';
+            }
+        }
+        client.onerror = function () {
+            console.error(client.responseText);
+        }
+        client.open('POST', '/api/auth/logout');
+        client.send();
+    }
+</script>
